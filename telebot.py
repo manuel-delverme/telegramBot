@@ -4,7 +4,7 @@ import time
 import requests
 import hashlib
 import pprint
-molly = telepot.Bot("150945762:AAH2J2d8nsJVEit5F0SvZqnrrfz7af7_S2E")
+molly = telepot.Bot(open("api_key").read()[:-1])
 
 watchers = set()
 manuel_id = 45571984
