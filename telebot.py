@@ -43,11 +43,6 @@ def handle_message(msg):
             log_message(e)
             log_message(msg)
 
-    elif cmd == "annoy":
-        user_id = int(msg_txt[1])
-        show_keyboard = {'keyboard': [['Bello','Intelligente'], ['Bello && intelligente','Il mio idolo']]}
-        molly.sendMessage(user_id, 'Manuel è:', reply_markup=show_keyboard)
-
     elif cmd == "spam":
         global oldHash
         oldHash = ""
