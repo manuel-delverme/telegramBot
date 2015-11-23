@@ -4,6 +4,7 @@ import time
 import requests
 import hashlib
 import pprint
+from time import gmtime, strftime
 molly = telepot.Bot(open("api_key").read()[:-1])
 
 watchers = set()
@@ -47,6 +48,10 @@ def handle_message(msg):
         global oldHash
         oldHash = ""
 
+    elif cmd == "ping":
+        global checks
+        molly.sendMessage(manuel_id, "{}; pong".format(checks))
+
     elif msg_txt is not None:
         molly.sendMessage(manuel_id, "someone is harrassing me")
         molly.sendMessage(manuel_id, pprint.pformat(msg))
@@ -60,10 +65,15 @@ def getHash():
 
 molly.notifyOnMessage(handle_message)
 oldHash = getHash()
+checks = 0
 while True:
     newHash = getHash()
     if newHash != oldHash:
         for watcher_id in watchers:
             molly.sendMessage(watcher_id, "BOOKING CHANGED!")
         oldHash = newHash
-    time.sleep(60)
+    time.sleep(3*60)  # 3 min
+    checks += 1
+    if checks == 3*20:
+        checks = 0
+        molly.sendMessage(manuel_id, strftime("%Y-%m-%d %H:%M:%S", gmtime()))
