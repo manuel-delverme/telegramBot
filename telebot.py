@@ -5,75 +5,48 @@ import requests
 import hashlib
 import pprint
 from time import gmtime, strftime
-molly = telepot.Bot(open("api_key").read()[:-1])
 
-watchers = set()
 manuel_id = 45571984
 
-def log_message(msg):
-    molly.sendMessage(manuel_id, pprint.pformat(msg))
+class Secretary(object):
+    def __init__(self, key):
+        self.sekretai = telepot.Bot(key)
+        self.sekretai.notifyOnMessage(self.handle_message)
 
-def handle_message(msg):
-    global watchers
-    global molly
-    user_id = msg['from']['id']
-    try:
-        msg_txt = msg['text']
-    except KeyError:
-        log_message("failed to parse the message")
-        log_message(msg)
-        return
+    def log_message(self, msg):
+        self.sekretai.sendMessage(manuel_id, pprint.pformat(msg))
 
-    msg_txt = msg_txt.split(maxsplit=1)
-    cmd = msg_txt[0]
-
-    if cmd[0] == "/":
-        cmd = cmd[1:]
-    cmd = cmd.lower()
-
-    if  cmd == "watch":
-        watchers.add(user_id)
-        molly.sendMessage(user_id, "added you to watchers")
-        pprint.pprint(watchers)
-
-    elif cmd == "!watch":
+    def handle_message(msg):
+        user_id = msg['from']['id']
         try:
-            watchers.remove(user_id)
-        except KeyError as e:
-            molly.sendMessage(user_id, "you can't unwatch!")
-            log_message(e)
+            msg_txt = msg['text']
+            intent = msg['intent']
+            target = msg['target']
+        except KeyError:
+            log_message("failed to parse the message")
             log_message(msg)
+            return
 
-    elif cmd == "spam":
-        global oldHash
-        oldHash = ""
+        msg_txt = msg_txt.split(maxsplit=1)
+        cmd = msg_txt[0]
 
-    elif cmd == "ping":
-        global checks
-        molly.sendMessage(manuel_id, "{}; pong".format(checks))
+        if cmd[0] == "/":
+            cmd = cmd[1:]
+        cmd = cmd.lower()
 
-    elif msg_txt is not None:
-        molly.sendMessage(manuel_id, "someone is harrassing me")
-        molly.sendMessage(manuel_id, pprint.pformat(msg))
+        if cmd == "ping":
+            self.sekretai.sendMessage(manuel_id, "{}; pong".format(checks))
 
-def getHash():
-    request = requests.get("http://led.delen.polito.it/direct_access/bookingstu.asp")
-    end_static = request.content.find(b"<!-- - - - - - - - - - - fine corpo - - - - - - - - - - -->")
-    return hashlib.md5(request.content[:end_static]).hexdigest()
+    def handle_knowledge(self):
+        pass
+
+    def spin(sefl):
+        while True:
+            self.sekretai.sendMessage(watcher_id, "BOOKING CHANGED!")
+            sleep(1)
 
 
-
-molly.notifyOnMessage(handle_message)
-oldHash = getHash()
-checks = 0
-while True:
-    newHash = getHash()
-    if newHash != oldHash:
-        for watcher_id in watchers:
-            molly.sendMessage(watcher_id, "BOOKING CHANGED!")
-        oldHash = newHash
-    time.sleep(3*60)  # 3 min
-    checks += 1
-    if checks == 3*20:
-        checks = 0
-        molly.sendMessage(manuel_id, strftime("%Y-%m-%d %H:%M:%S", gmtime()))
+if __name__ == "__main__":
+    with open("api_key") as fin:
+        bot = Secretary(fin.read()[:-1])
+    bot.spin()
